@@ -1,3 +1,5 @@
+# respuestas
+
 # Respuestas — Northwind SQL
 
 ## Sección 1. Fundamentos: filtrado y agregación
@@ -11,21 +13,19 @@
 **Consulta:**
 
 ```sql
---  Comentario de una línea explicando qué devuelve esta consulta
- [
 SELECT product_name,ROUND(unit_price::numeric,2)
 FROM products
 WHERE discontinued = 0 and unit_price between 10 and 50
-ORDER BY unit_price desc ;]
+ORDER BY unit_price desc ;
 ```
 
 **Resultado:**
 
-> `![Insertar captura de: Resultado de la Pregunta 1 en pgAdmin, con cabeceras de columna visibles](img/p01.png)`
+> ![img/Ejer1.png](img/Ejer1.png)
 
-**Comentario:**
+**Técnicas:**
 
-> **[RELLENAR CON TUS PALABRAS: explica por qué has resuelto la consulta así — técnicas elegidas, alternativas descartadas, qué te sorprendió del resultado]**
+> `WHERE`, `BETWEEN`, `ROUND()`, alias de columna, `ORDER BY`
 
 ## Pregunta 2 — Concentración geográfica de la cartera
 
@@ -36,38 +36,46 @@ ORDER BY unit_price desc ;]
 **Consulta:**
 
 ```sql
---  Comentario de una línea explicando qué devuelve esta consulta
- [RELLENAR: escribe aquí tu consulta SQL]
+SELECT country as pais, count(customer_id) as num_clientes, count(city) as num_ciudades
+FROM customers
+group by country
+	having count (distinct customer_id) >= 5
 ```
 
 **Resultado:**
 
-> `![Insertar captura de: Resultado de la Pregunta 2 en pgAdmin, con cabeceras de columna visibles](img/p02.png)`
+> ![img/Ejer2.png](img/Ejer2.png)
 
-**Comentario:**
+**Técnicas:**
 
-> **[RELLENAR CON TUS PALABRAS: explica por qué has resuelto la consulta así — técnicas elegidas, alternativas descartadas, qué te sorprendió del resultado]**
+> `GROUP BY`, `COUNT()`, `COUNT(DISTINCT ...)`, `HAVING`
 
 ## Pregunta 3 — Alerta de reposición
 
-**Enunciado:** Localiza los productos activos cuyas unidades en stock sean inferiores o iguales a su nivel de reposición. Muestra el nombre, las unidades en stock, el nivel de reposición, las unidades ya pedidas al proveedor y una columna de texto que indique 'CRÍTICO' cuando el stock sea 0 y 'AVISO' en el resto de casos.
+**Enunciado:** Localiza los productos activos cuyas unidades en stock sean inferiores o iguales a su nivel de reposición. Muestra el nombre, las unidades en stock, el nivel de reposición, las unidades ya pedidas al proveedor y una columna de texto que indique ‘CRÍTICO’ cuando el stock sea 0 y ‘AVISO’ en el resto de casos.
 
 **Columnas esperadas:** `producto`, `stock`, `nivel_reposicion`, `pedido_a_proveedor`, `situacion`
 
 **Consulta:**
 
 ```sql
---  Comentario de una línea explicando qué devuelve esta consulta
- [RELLENAR: escribe aquí tu consulta SQL]
+SELECT product_name AS producto,
+units_in_stock AS stock,
+reorder_level AS nivel_reposicion,
+units_on_order AS pedido_a_proveedor,
+CASE WHEN units_in_stock = 0 THEN 'CRÍTICO'
+	ELSE 'AVISO' END AS situacion
+FROM products
+WHERE discontinued = 0 AND units_on_order >= units_in_stock
 ```
 
 **Resultado:**
 
-> `![Insertar captura de: Resultado de la Pregunta 3 en pgAdmin, con cabeceras de columna visibles](img/p03.png)`
+> ![img/Ejer3.png](img/Ejer3.png)
 
-**Comentario:**
+**Técnicas:**
 
-> **[RELLENAR CON TUS PALABRAS: explica por qué has resuelto la consulta así — técnicas elegidas, alternativas descartadas, qué te sorprendió del resultado]**
+> `WHERE` con comparación entre columnas, `CASE WHEN`
 
 ## Sección 2. INNER JOIN
 
@@ -80,17 +88,23 @@ ORDER BY unit_price desc ;]
 **Consulta:**
 
 ```sql
---  Comentario de una línea explicando qué devuelve esta consulta
- [RELLENAR: escribe aquí tu consulta SQL]
+SELECT p.product_name AS producto,
+c.category_name AS categoria,
+s.company_name AS proveedor,
+s.country AS pais,
+s.city AS ciudad
+FROM products p INNER JOIN categories c ON p.category_id = c.category_id
+	INNER JOIN suppliers s ON p.supplier_id = s.supplier_id
+WHERE s.country IN ('Spain','France','Italy');
 ```
 
 **Resultado:**
 
-> `![Insertar captura de: Resultado de la Pregunta 4 en pgAdmin, con cabeceras de columna visibles](img/p04.png)`
+> ![img/Ejer4.png](img/Ejer4.png)
 
-**Comentario:**
+**Técnicas:**
 
-> **[RELLENAR CON TUS PALABRAS: explica por qué has resuelto la consulta así — técnicas elegidas, alternativas descartadas, qué te sorprendió del resultado]**
+> `INNER JOIN` de tres tablas, alias de tabla, `WHERE ... IN`
 
 ## Pregunta 5 — Detalle valorizado de un pedido
 
@@ -101,17 +115,28 @@ ORDER BY unit_price desc ;]
 **Consulta:**
 
 ```sql
---  Comentario de una línea explicando qué devuelve esta consulta
- [RELLENAR: escribe aquí tu consulta SQL]
+SELECT
+    c.company_name AS cliente,
+    o.order_date AS fecha_pedido,
+    p.product_name AS producto,
+    od.unit_price AS precio_unitario,
+    od.quantity AS cantidad,
+    od.discount AS descuento,
+    ROUND((od.unit_price * od.quantity * (1 - od.discount))::numeric, 2) AS importe_linea
+FROM orders o
+INNER JOIN customers c USING (customer_id)
+INNER JOIN order_details od USING (order_id)
+INNER JOIN products p USING (product_id)
+WHERE o.order_id = 10248;
 ```
 
 **Resultado:**
 
-> `![Insertar captura de: Resultado de la Pregunta 5 en pgAdmin, con cabeceras de columna visibles](img/p05.png)`
+> ![img/Ejer5.png](img/Ejer5.png)
 
-**Comentario:**
+**Técnicas:**
 
-> **[RELLENAR CON TUS PALABRAS: explica por qué has resuelto la consulta así — técnicas elegidas, alternativas descartadas, qué te sorprendió del resultado]**
+> `INNER JOIN` con `USING`, aritmética entre columnas, `ROUND()`
 
 ## Pregunta 6 — Ranking de categorías por facturación
 
@@ -122,61 +147,84 @@ ORDER BY unit_price desc ;]
 **Consulta:**
 
 ```sql
---  Comentario de una línea explicando qué devuelve esta consulta
- [RELLENAR: escribe aquí tu consulta SQL]
+SELECT
+    c.category_name AS categoria,
+    COUNT(od.product_id) AS num_lineas,
+    COUNT(DISTINCT p.product_id) AS num_productos,
+    ROUND(SUM(od.unit_price * od.quantity * (1 - od.discount))::numeric, 2) AS facturacion
+FROM categories c
+INNER JOIN products p ON c.category_id = p.category_id
+INNER JOIN order_details od ON p.product_id = od.product_id
+GROUP BY c.category_name
+HAVING ROUND(SUM(od.unit_price * od.quantity * (1 - od.discount))::numeric, 2) > 100000
+ORDER BY facturacion DESC;
 ```
 
 **Resultado:**
 
-> `![Insertar captura de: Resultado de la Pregunta 6 en pgAdmin, con cabeceras de columna visibles](img/p06.png)`
+> ![img/Ejer6.png](img/Ejer6.png)
 
-**Comentario:**
+**Técnicas:**
 
-> **[RELLENAR CON TUS PALABRAS: explica por qué has resuelto la consulta así — técnicas elegidas, alternativas descartadas, qué te sorprendió del resultado]**
+> `INNER JOIN` de tres tablas, `GROUP BY`, `SUM()`, `COUNT(DISTINCT ...)`, `HAVING`, `ROUND()`
 
 ## Sección 3. Uniones externas, reflexivas y cruzadas
 
 ## Pregunta 7 — Clientes sin actividad comercial
 
-**Enunciado:** Lista todos los clientes con el número de pedidos que ha realizado cada uno y la fecha de su último pedido. Los clientes sin ningún pedido deben aparecer igualmente, con un 0 en el conteo y el texto 'SIN PEDIDOS' en lugar de la fecha. Ordena de forma que los clientes inactivos aparezcan primero.
+**Enunciado:** Lista todos los clientes con el número de pedidos que ha realizado cada uno y la fecha de su último pedido. Los clientes sin ningún pedido deben aparecer igualmente, con un 0 en el conteo y el texto ‘SIN PEDIDOS’ en lugar de la fecha. Ordena de forma que los clientes inactivos aparezcan primero.
 
 **Columnas esperadas:** `cliente`, `pais`, `num_pedidos`, `ultimo_pedido`
 
 **Consulta:**
 
 ```sql
---  Comentario de una línea explicando qué devuelve esta consulta
- [RELLENAR: escribe aquí tu consulta SQL]
+
+SELECT c.contact_name,
+max(o.order_date) AS ultimo_pedido,
+count(o.order_id) AS numero_pedidos,
+CASE
+	WHEN count(o.order_id) = 0 THEN 'SIN PEDIDOS'
+	ELSE 'CON PEDIDOS'
+END AS texto
+FROM customers c LEFT JOIN orders o ON c.customer_id=o.customer_id
+GROUP BY c.contact_name
+
 ```
 
 **Resultado:**
 
-> `![Insertar captura de: Resultado de la Pregunta 7 en pgAdmin, con cabeceras de columna visibles](img/p07.png)`
+> ![img/Ejer7.png](img/Ejer7.png)
 
-**Comentario:**
+**Técnicas:**
 
-> **[RELLENAR CON TUS PALABRAS: explica por qué has resuelto la consulta así — técnicas elegidas, alternativas descartadas, qué te sorprendió del resultado]**
+> `LEFT JOIN`, `COUNT()` sobre columna de la tabla derecha, `COALESCE()`, `MAX()`
 
 ## Pregunta 8 — Organigrama de la fuerza de ventas
 
-**Enunciado:** Muestra cada empleado con su nombre completo, su cargo, el nombre completo de la persona a la que reporta y el cargo de esa persona. El empleado que no reporta a nadie debe aparecer también, con el texto 'DIRECCIÓN GENERAL' en el campo del responsable.
+**Enunciado:** Muestra cada empleado con su nombre completo, su cargo, el nombre completo de la persona a la que reporta y el cargo de esa persona. El empleado que no reporta a nadie debe aparecer también, con el texto ‘DIRECCIÓN GENERAL’ en el campo del responsable.
 
 **Columnas esperadas:** `empleado`, `cargo`, `responsable`, `cargo_responsable`
 
 **Consulta:**
 
 ```sql
---  Comentario de una línea explicando qué devuelve esta consulta
-[RELLENAR: escribe aquí tu consulta SQL]
+SELECT
+    emp.first_name || ' ' || emp.last_name AS empleado,
+    emp.title AS cargo,
+    COALESCE(jefe.first_name || ' ' || jefe.last_name, 'DIRECCIÓN GENERAL') AS responsable,
+    jefe.title AS cargo_responsable
+FROM employees emp
+LEFT JOIN employees jefe ON emp.reports_to = jefe.employee_id;
 ```
 
 **Resultado:**
 
-> `![Insertar captura de: Resultado de la Pregunta 8 en pgAdmin, con cabeceras de columna visibles](img/p08.png)`
+> ![img/Ejer8.png](img/Ejer8.png)
 
-**Comentario:**
+**Técnicas:**
 
-> **[RELLENAR CON TUS PALABRAS: explica por qué has resuelto la consulta así — técnicas elegidas, alternativas descartadas, qué te sorprendió del resultado]**
+> `SELF JOIN` con `LEFT JOIN`, alias de tabla obligatorios, concatenación de texto, `COALESCE()`
 
 ## Pregunta 9 — Rejilla de cobertura categoría × año
 
@@ -187,17 +235,36 @@ ORDER BY unit_price desc ;]
 **Consulta:**
 
 ```sql
---  Comentario de una línea explicando qué devuelve esta consulta
- [RELLENAR: escribe aquí tu consulta SQL]
+WITH anios AS (
+    SELECT DISTINCT EXTRACT(YEAR FROM order_date) AS anio FROM orders
+),
+facturacion_real AS (
+    SELECT
+        p.category_id,
+        EXTRACT(YEAR FROM o.order_date) AS anio,
+        SUM(od.unit_price * od.quantity * (1 - od.discount)) AS facturacion
+    FROM orders o
+    JOIN order_details od ON o.order_id = od.order_id
+    JOIN products p ON od.product_id = p.product_id
+    GROUP BY p.category_id, EXTRACT(YEAR FROM o.order_date)
+)
+SELECT
+    c.category_name AS categoria,
+    a.anio AS anio,
+    COALESCE(ROUND(f.facturacion::numeric, 2), 0) AS facturacion
+FROM categories c
+CROSS JOIN anios a
+LEFT JOIN facturacion_real f ON c.category_id = f.category_id AND a.anio = f.anio
+ORDER BY c.category_name, a.anio;
 ```
 
 **Resultado:**
 
-> `![Insertar captura de: Resultado de la Pregunta 9 en pgAdmin, con cabeceras de columna visibles](img/p09.png)`
+> ![img/Ejer9.png](img/Ejer9.png)
 
-**Comentario:**
+**Técnicas:**
 
-> **[RELLENAR CON TUS PALABRAS: explica por qué has resuelto la consulta así — técnicas elegidas, alternativas descartadas, qué te sorprendió del resultado]**
+> `CROSS JOIN` para generar la rejilla, `LEFT JOIN` contra los datos reales, `COALESCE()`, `EXTRACT()`
 
 ## Pregunta 10 — Mapa de países: clientes frente a proveedores
 
@@ -208,40 +275,77 @@ ORDER BY unit_price desc ;]
 **Consulta:**
 
 ```sql
---  Comentario de una línea explicando qué devuelve esta consulta
- [RELLENAR: escribe aquí tu consulta SQL]
+SELECT
+    COALESCE(c.country, s.country) AS pais,
+    COALESCE(c.num_clientes, 0) AS num_clientes,
+    COALESCE(s.num_proveedores, 0) AS num_proveedores,
+    CASE
+        WHEN c.num_clientes IS NOT NULL AND s.num_proveedores IS NOT NULL THEN 'AMBOS'
+        WHEN c.num_clientes IS NOT NULL THEN 'SOLO CLIENTES'
+        ELSE 'SOLO PROVEEDORES'
+    END AS tipo_presencia
+FROM (
+    SELECT country, COUNT(customer_id) AS num_clientes
+    FROM customers GROUP BY country
+) c
+FULL JOIN (
+    SELECT country, COUNT(supplier_id) AS num_proveedores
+    FROM suppliers GROUP BY country
+) s ON c.country = s.country;
 ```
 
 **Resultado:**
 
-> `![Insertar captura de: Resultado de la Pregunta 10 en pgAdmin, con cabeceras de columna visibles](img/p10.png)`
+> ![img/Ejer10.png](img/Ejer10.png)
 
-**Comentario:**
+**Técnicas:**
 
-> **[RELLENAR CON TUS PALABRAS: explica por qué has resuelto la consulta así — técnicas elegidas, alternativas descartadas, qué te sorprendió del resultado]**
+> `FULL JOIN` entre dos subconsultas agregadas, `COALESCE()`, `CASE WHEN`
 
 ## Sección 4. Operadores de conjunto
 
 ## Pregunta 11 — Directorio unificado de contactos
 
-**Enunciado:** Construye una sola tabla que reúna los contactos de clientes, los de proveedores y los empleados. Cada fila debe indicar el origen ('CLIENTE', 'PROVEEDOR', 'EMPLEADO'), el nombre de la persona de contacto en mayúsculas, la organización a la que pertenece, la ciudad y el país. Para los empleados, la organización es el literal 'NORTHWIND TRADERS' y el nombre de contacto se forma concatenando nombre y apellidos. Ordena por origen y luego por país.
+**Enunciado:** Construye una sola tabla que reúna los contactos de clientes, los de proveedores y los empleados. Cada fila debe indicar el origen (‘CLIENTE’, ‘PROVEEDOR’, ‘EMPLEADO’), el nombre de la persona de contacto en mayúsculas, la organización a la que pertenece, la ciudad y el país. Para los empleados, la organización es el literal ‘NORTHWIND TRADERS’ y el nombre de contacto se forma concatenando nombre y apellidos. Ordena por origen y luego por país.
 
 **Columnas esperadas:** `origen`, `contacto`, `organizacion`, `ciudad`, `pais`
 
 **Consulta:**
 
 ```sql
---  Comentario de una línea explicando qué devuelve esta consulta
- [RELLENAR: escribe aquí tu consulta SQL]
+SELECT
+    'CLIENTE' AS origen,
+    UPPER(contact_name) AS contacto,
+    company_name AS organizacion,
+    city AS ciudad,
+    country AS pais
+FROM customers
+UNION ALL
+SELECT
+    'EMPLEADO' AS origen,
+    UPPER(first_name || ' ' || last_name) AS contacto,
+    'NORTHWIND TRADERS' AS organizacion,
+    city AS ciudad,
+    country AS pais
+FROM employees
+UNION ALL
+SELECT
+    'PROVEEDOR' AS origen,
+    UPPER(contact_name) AS contacto,
+    company_name AS organizacion,
+    city AS ciudad,
+    country AS pais
+FROM suppliers
+ORDER BY origen, pais;
 ```
 
 **Resultado:**
 
-> `![Insertar captura de: Resultado de la Pregunta 11 en pgAdmin, con cabeceras de columna visibles](img/p11.png)`
+> ![image.png](img/Ejer11.png)
 
-**Comentario:**
+**Técnicas:**
 
-> **[RELLENAR CON TUS PALABRAS: explica por qué has resuelto la consulta así — técnicas elegidas, alternativas descartadas, qué te sorprendió del resultado. Razona por qué aquí conviene UNION ALL y no UNION]**
+> `UNION ALL`, `UPPER()`, concatenación con `||` o `CONCAT()`, literales como columna
 
 ## Pregunta 12 — Mercados con desequilibrio
 
@@ -249,52 +353,70 @@ ORDER BY unit_price desc ;]
 
 **Columnas esperadas:** `pais`
 
-**Consulta (a):**
-
 ```sql
---  Comentario de una línea explicando qué devuelve esta consulta
- [RELLENAR: escribe aquí tu consulta SQL del apartado a]
-```
+--Pregunta 12
+-- a: No coincidencia
+SELECT country AS pais
+FROM customers
+EXCEPT
+SELECT country AS pais
+FROM suppliers
 
-**Consulta (b):**
-
-```sql
---  Comentario de una línea explicando qué devuelve esta consulta
- [RELLENAR: escribe aquí tu consulta SQL del apartado b]
+-- b: coincidencia
+SELECT country AS pais
+FROM customers
+INTERSECT
+SELECT country AS pais
+FROM suppliers
 ```
 
 **Resultado:**
 
-> `![Insertar captura de: Resultado de la Pregunta 12, apartado a](img/p12a.png)`
+> ![img/Ejer12.png](img/Ejer12.png)
 >
-> `![Insertar captura de: Resultado de la Pregunta 12, apartado b](img/p12b.png)`
+> ![img/Ejer12_2.png](img/Ejer12_2.png)
 
-**Comentario:**
+**Técnicas:**
 
-> **[RELLENAR CON TUS PALABRAS: explica por qué has resuelto la consulta así — compara el resultado del apartado a con lo que obtendrías usando un LEFT JOIN ... WHERE ... IS NULL]**
+> `2EXCEPT`, `INTERSECT`
 
 ## Sección 5. Subconsultas
 
 ## Pregunta 13 — Clientes que nunca han comprado pescado
 
-**Enunciado:** Localiza los clientes que nunca han incluido un producto de la categoría 'Seafood' en ninguno de sus pedidos. Muestra el nombre del cliente, su país y el número total de pedidos que sí ha realizado, de mayor a menor.
+**Enunciado:** Localiza los clientes que nunca han incluido un producto de la categoría ‘Seafood’ en ninguno de sus pedidos. Muestra el nombre del cliente, su país y el número total de pedidos que sí ha realizado, de mayor a menor.
 
 **Columnas esperadas:** `cliente`, `pais`, `pedidos_realizados`
 
 **Consulta:**
 
 ```sql
---  Comentario de una línea explicando qué devuelve esta consulta
- [RELLENAR: escribe aquí tu consulta SQL con NOT EXISTS]
+SELECT
+    c.company_name AS cliente,
+    c.country AS pais,
+    COUNT(o.order_id) AS pedidos_realizados
+FROM customers c
+LEFT JOIN orders o ON c.customer_id = o.customer_id
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM orders o2
+    INNER JOIN order_details od ON o2.order_id = od.order_id
+    INNER JOIN products p ON od.product_id = p.product_id
+    INNER JOIN categories cat ON p.category_id = cat.category_id
+    WHERE o2.customer_id = c.customer_id
+      AND cat.category_name = 'Seafood'
+)
+GROUP BY c.company_name, c.country
+ORDER BY pedidos_realizados DESC;
 ```
 
 **Resultado:**
 
-> `![Insertar captura de: Resultado de la Pregunta 13 en pgAdmin, con cabeceras de columna visibles](img/p13.png)`
+> ![img/Ejer13.png](img/Ejer13.png)
 
-**Comentario:**
+**Técnicas:**
 
-> **[RELLENAR CON TUS PALABRAS: explica por qué has resuelto la consulta así con NOT EXISTS, y comenta qué ocurre si se prueba con NOT IN cuando la subconsulta puede devolver NULL]**
+> anti join con `NOT EXISTS`, subconsulta correlacionada, `INNER JOIN` en la subconsulta
 
 ## Pregunta 14 — Productos por encima de la media
 
@@ -305,17 +427,24 @@ ORDER BY unit_price desc ;]
 **Consulta:**
 
 ```sql
---  Comentario de una línea explicando qué devuelve esta consulta
- [RELLENAR: escribe aquí tu consulta SQL]
+SELECT
+    product_name AS producto,
+    ROUND(unit_price::numeric, 2) AS precio,
+    ROUND((SELECT AVG(unit_price) FROM products)::numeric, 2) AS precio_medio_catalogo,
+    ROUND((unit_price - (SELECT AVG(unit_price) FROM products))::numeric, 2) AS diferencia
+FROM products
+WHERE discontinued = 0
+  AND unit_price > (SELECT AVG(unit_price) FROM products)
+ORDER BY diferencia DESC;
 ```
 
 **Resultado:**
 
-> `![Insertar captura de: Resultado de la Pregunta 14 en pgAdmin, con cabeceras de columna visibles](img/p14.png)`
+> ![img/Ejer14.png](img/Ejer14.png)
 
-**Comentario:**
+**Técnicas:**
 
-> **[RELLENAR CON TUS PALABRAS: explica por qué has resuelto la consulta así — técnicas elegidas, alternativas descartadas, qué te sorprendió del resultado]**
+> subconsulta escalar en `WHERE`, subconsulta escalar en `SELECT`, aritmética
 
 ## Pregunta 15 — Ticket medio por cliente
 
@@ -326,17 +455,34 @@ ORDER BY unit_price desc ;]
 **Consulta:**
 
 ```sql
---  Comentario de una línea explicando qué devuelve esta consulta
- [RELLENAR: escribe aquí tu consulta SQL con subconsulta en FROM]
+SELECT
+    c.company_name AS cliente,
+    c.country AS pais,
+    COUNT(t.order_id) AS num_pedidos,
+    ROUND(SUM(t.importe_pedido)::numeric, 2) AS importe_total,
+    ROUND(AVG(t.importe_pedido)::numeric, 2) AS ticket_medio
+FROM customers c
+INNER JOIN (
+    SELECT
+        o.customer_id,
+        o.order_id,
+        SUM(od.unit_price * od.quantity * (1 - od.discount)) AS importe_pedido
+    FROM orders o
+    INNER JOIN order_details od ON o.order_id = od.order_id
+    GROUP BY o.customer_id, o.order_id
+) AS t ON c.customer_id = t.customer_id
+GROUP BY c.company_name, c.country
+ORDER BY ticket_medio DESC
+LIMIT 15;
 ```
 
 **Resultado:**
 
-> `![Insertar captura de: Resultado de la Pregunta 15 en pgAdmin, con cabeceras de columna visibles](img/p15.png)`
+> ![img/Ejer15.png](img/Ejer15.png)
 
-**Comentario:**
+**Técnicas:**
 
-> **[RELLENAR CON TUS PALABRAS: explica por qué has resuelto la consulta así — por qué la agregación en dos niveles es necesaria]**
+> subconsulta en `FROM` (tabla derivada), agregación en dos niveles, `LIMIT`
 
 ## Sección 6. Subconsultas correlacionadas y CTE
 
@@ -349,38 +495,89 @@ ORDER BY unit_price desc ;]
 **Consulta:**
 
 ```sql
---  Comentario de una línea explicando qué devuelve esta consulta
- [RELLENAR: escribe aquí tu consulta SQL con subconsulta correlacionada]
+SELECT
+    c.category_name AS categoria,
+    p.product_name AS producto,
+    p.unit_price AS precio,
+    (
+        SELECT AVG(p2.unit_price)
+        FROM products p2
+        WHERE p2.category_id = p.category_id
+    ) AS precio_medio_categoria
+FROM products p
+JOIN categories c ON p.category_id = c.category_id
+WHERE p.unit_price = (
+    SELECT MAX(p3.unit_price)
+    FROM products p3
+    WHERE p3.category_id = p.category_id
+);
 ```
 
 **Resultado:**
 
-> `![Insertar captura de: Resultado de la Pregunta 16 en pgAdmin, con cabeceras de columna visibles](img/p16.png)`
+> ![img/Ejer16.png](img/Ejer16.png)
 
-**Comentario:**
+**Técnicas:**
 
-> **[RELLENAR CON TUS PALABRAS: explica por qué has resuelto la consulta así, y qué coste tendría este planteamiento sobre una tabla de diez millones de filas]**
+> subconsulta correlacionada en `WHERE`, subconsulta correlacionada en `SELECT`, `INNER JOIN`
 
 ## Pregunta 17 — Segmentación ABC de la cartera de clientes
 
-**Enunciado:** Usando CTE, calcula la facturación total de cada cliente, divide los clientes en cuartiles según esa facturación, asigna una etiqueta de segmento ('A - Estratégico', 'B - Consolidado', 'C - Ocasional', 'D - Marginal') y devuelve, por segmento, el número de clientes, la facturación total del segmento y el porcentaje que representa sobre el total de la compañía.
+**Enunciado:** Usando CTE, calcula la facturación total de cada cliente, divide los clientes en cuartiles según esa facturación, asigna una etiqueta de segmento (‘A - Estratégico’, ‘B - Consolidado’, ‘C - Ocasional’, ‘D - Marginal’) y devuelve, por segmento, el número de clientes, la facturación total del segmento y el porcentaje que representa sobre el total de la compañía.
 
 **Columnas esperadas:** `segmento`, `num_clientes`, `facturacion_segmento`, `porcentaje_sobre_total`
 
 **Consulta:**
 
 ```sql
---  Comentario de una línea explicando qué devuelve esta consulta
- [RELLENAR: escribe aquí tu consulta SQL con WITH / NTILE()]
+WITH facturacion_clientes AS (
+    SELECT
+        customer_id,
+        SUM(unit_price * quantity * (1 - discount)) AS facturacion_total
+    FROM orders
+    JOIN order_details USING (order_id)
+    GROUP BY customer_id
+),
+cuartiles_clientes AS (
+    SELECT
+        customer_id,
+        facturacion_total,
+        NTILE(4) OVER (ORDER BY facturacion_total DESC) AS cuartil
+    FROM facturacion_clientes
+),
+segmentos_clientes AS (
+    SELECT
+        customer_id,
+        facturacion_total,
+        CASE cuartil
+            WHEN 1 THEN 'A - Estratégico'
+            WHEN 2 THEN 'B - Consolidado'
+            WHEN 3 THEN 'C - Ocasional'
+            ELSE 'D - Marginal'
+        END AS segmento
+    FROM cuartiles_clientes
+),
+total_compania AS (
+    SELECT SUM(facturacion_total) AS total_global FROM facturacion_clientes
+)
+SELECT
+    s.segmento,
+    COUNT(s.customer_id) AS num_clientes,
+    SUM(s.facturacion_total) AS facturacion_segmento,
+    ROUND(SUM(s.facturacion_total::numeric) * 100.0 / tc.total_global::numeric, 2) AS porcentaje_sobre_total
+FROM segmentos_clientes s
+CROSS JOIN total_compania tc
+GROUP BY s.segmento, tc.total_global
+ORDER BY s.segmento;
 ```
 
 **Resultado:**
 
-> `![Insertar captura de: Resultado de la Pregunta 17 en pgAdmin, con cabeceras de columna visibles](img/p17.png)`
+> ![img/Ejer17.png](img/Ejer17.png)
 
-**Comentario:**
+**Técnicas:**
 
-> **[RELLENAR CON TUS PALABRAS: explica por qué has resuelto la consulta así — cómo encadenaste las CTE]**
+> `WITH` con varias CTE encadenadas, `NTILE()`, `CASE WHEN`, agregación sobre el resultado de una CTE, cálculo de porcentaje
 
 ## Sección 7. Funciones de ventana
 
@@ -393,17 +590,45 @@ ORDER BY unit_price desc ;]
 **Consulta:**
 
 ```sql
---  Comentario de una línea explicando qué devuelve esta consulta
- [RELLENAR: escribe aquí tu consulta SQL con RANK()/ROW_NUMBER() y PARTITION BY]
+WITH ventas_productos AS (
+    SELECT
+        c.category_name AS categoria,
+        p.product_name AS producto,
+        SUM(od.quantity) AS unidades,
+        SUM(od.unit_price * od.quantity * (1 - od.discount)) AS facturacion
+    FROM categories c
+    JOIN products p USING (category_id)
+    JOIN order_details od USING (product_id)
+    GROUP BY c.category_name, p.product_name
+),
+ranking_productos AS (
+    SELECT
+        categoria,
+        producto,
+        unidades,
+        facturacion,
+        ROW_NUMBER() OVER (PARTITION BY categoria ORDER BY facturacion DESC) AS posicion_en_categoria,
+        ROW_NUMBER() OVER (ORDER BY facturacion DESC) AS posicion_global
+    FROM ventas_productos
+)
+SELECT
+    categoria,
+    posicion_en_categoria,
+    producto,
+    unidades,
+    facturacion,
+    posicion_global
+FROM ranking_productos
+WHERE posicion_en_categoria <= 3;
 ```
 
 **Resultado:**
 
-> `![Insertar captura de: Resultado de la Pregunta 18 en pgAdmin, con cabeceras de columna visibles](img/p18.png)`
+> ![img/Ejer18.png](img/Ejer18.png)
 
-**Comentario:**
+**Técnicas:**
 
-> **[RELLENAR CON TUS PALABRAS: explica por qué has resuelto la consulta así, y qué diferencia habría entre RANK(), DENSE_RANK() y ROW_NUMBER() si dos productos empatasen]**
+> `RANK()` o `ROW_NUMBER()` con `OVER (PARTITION BY ... ORDER BY ...)`, CTE para poder filtrar por la posición, función de ventana sin `PARTITION BY`
 
 ## Pregunta 19 — Evolución mensual con acumulado y media móvil
 
@@ -414,17 +639,45 @@ ORDER BY unit_price desc ;]
 **Consulta:**
 
 ```sql
---  Comentario de una línea explicando qué devuelve esta consulta
- [RELLENAR: escribe aquí tu consulta SQL con SUM() OVER, ROWS BETWEEN y LAG()]
+WITH ventas_mensuales AS (
+    SELECT
+        DATE_TRUNC('month', order_date)::DATE AS mes,
+        SUM(unit_price * quantity * (1 - discount)) AS facturacion
+    FROM orders
+    JOIN order_details USING (order_id)
+    WHERE EXTRACT(YEAR FROM order_date) = 1997
+    GROUP BY DATE_TRUNC('month', order_date)
+),
+calculos_ventana AS (
+    SELECT
+        mes,
+        facturacion,
+        SUM(facturacion) OVER (ORDER BY mes) AS acumulado,
+        AVG(facturacion) OVER (ORDER BY mes ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) AS media_movil_3m,
+        LAG(facturacion, 1) OVER (ORDER BY mes) AS mes_anterior
+    FROM ventas_mensuales
+)
+SELECT
+    mes,
+    facturacion,
+    acumulado,
+    media_movil_3m,
+    mes_anterior,
+    CASE
+        WHEN mes_anterior IS NULL OR mes_anterior = 0 THEN NULL
+        ELSE ROUND(((facturacion::numeric - mes_anterior::numeric) / mes_anterior::numeric) * 100, 2)
+    END AS variacion_pct
+FROM calculos_ventana
+ORDER BY mes;
 ```
 
 **Resultado:**
 
-> `![Insertar captura de: Resultado de la Pregunta 19 en pgAdmin, con cabeceras de columna visibles](img/p19.png)`
+> ![img/Ejer19.png](img/Ejer19.png)
 
-**Comentario:**
+**Técnicas:**
 
-> **[RELLENAR CON TUS PALABRAS: explica por qué has resuelto la consulta así, qué marco de ventana usaste para la media móvil y qué decidiste mostrar en la primera fila sin mes anterior]**
+> `DATE_TRUNC()`, `SUM() OVER (ORDER BY ...)` como total acumulado, definición explícita de marco con `ROWS BETWEEN 2 PRECEDING AND CURRENT ROW`, `LAG()`, CTE
 
 ## Pregunta 20 — Cuadro de mando anual por categoría
 
@@ -435,14 +688,44 @@ ORDER BY unit_price desc ;]
 **Consulta:**
 
 ```sql
---  Comentario de una línea explicando qué devuelve esta consulta
- [RELLENAR: escribe aquí tu consulta SQL con pivotado (FILTER) y ROLLUP]
+WITH pivot_anual AS (
+    SELECT
+        COALESCE(c.category_name, 'TOTAL GENERAL') AS categoria,
+        SUM(od.unit_price * od.quantity * (1 - od.discount)) FILTER (WHERE EXTRACT(YEAR FROM o.order_date) = 1996) AS f_1996,
+        SUM(od.unit_price * od.quantity * (1 - od.discount)) FILTER (WHERE EXTRACT(YEAR FROM o.order_date) = 1997) AS f_1997,
+        SUM(od.unit_price * od.quantity * (1 - od.discount)) FILTER (WHERE EXTRACT(YEAR FROM o.order_date) = 1998) AS f_1998,
+        SUM(od.unit_price * od.quantity * (1 - od.discount)) AS total
+    FROM categories c
+    JOIN products p ON c.category_id = p.category_id
+    JOIN order_details od ON p.product_id = od.product_id
+    JOIN orders o ON od.order_id = o.order_id
+    GROUP BY ROLLUP(c.category_name)
+)
+SELECT
+    categoria,
+    COALESCE(ROUND(f_1996::numeric, 2), 0) AS f_1996,
+    COALESCE(ROUND(f_1997::numeric, 2), 0) AS f_1997,
+    COALESCE(ROUND(f_1998::numeric, 2), 0) AS f_1998,
+    ROUND(total::numeric, 2) AS total,
+    ROUND((total / MAX(total) OVER () * 100)::numeric, 2) AS peso_pct,
+    CASE
+        WHEN categoria = 'TOTAL GENERAL' THEN NULL
+        WHEN f_1998 > f_1997 THEN 'CRECIMIENTO'
+        WHEN f_1998 < f_1997 THEN 'DECRECIMIENTO'
+        ELSE 'MANTENIDO'
+    END AS tendencia
+    /* Nota: La tendencia entre 1997 y 1998 no es del todo representativa ni
+       directamente comparable, ya que los datos de 1998 finalizan en el mes de mayo. */
+FROM pivot_anual
+ORDER BY
+    CASE WHEN categoria = 'TOTAL GENERAL' THEN 1 ELSE 0 END,
+    total DESC;
 ```
 
 **Resultado:**
 
-> `![Insertar captura de: Resultado de la Pregunta 20 en pgAdmin, con cabeceras de columna visibles](img/p20.png)`
+> ![img/Ejer20.png](img/Ejer20.png)
 
-**Comentario:**
+**Técnicas:**
 
-> **[RELLENAR CON TUS PALABRAS: explica por qué has resuelto la consulta así, y comenta por qué la comparación de tendencia entre 1997 y 1998 no es directamente válida dado que ambos años tienen datos parciales]**
+> **Técnicas:** pivotado manual con `CASE WHEN` dentro de `SUM()` (o `FILTER`), `ROLLUP` para la fila de totales, `COALESCE()`, `CASE WHEN` para la tendencia, funciones de ventana para el peso

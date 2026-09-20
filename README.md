@@ -1,3 +1,5 @@
+# README
+
 # Northwind SQL — Práctica de análisis de datos
 
 **Autor/a:** **[RELLENAR CON TUS PALABRAS: Tu nombre completo]**
@@ -6,33 +8,37 @@
 
 ## Entorno utilizado
 
-| Herramienta       | Versión                                                                                                                            |
-| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| PostgreSQL        | **[RELLENAR CON TUS PALABRAS: Indica la versión exacta de PostgreSQL que has instalado, p. ej. resultado de `SELECT version();`]** |
-| pgAdmin 4         | **[RELLENAR CON TUS PALABRAS: Indica la versión de pgAdmin 4 que aparece en Help → About pgAdmin 4]**                              |
-| Sistema operativo | **[RELLENAR CON TUS PALABRAS: Windows 11 / otro, y versión]**                                                                      |
-
----
-
-## Cómo reproducir este trabajo
-
-> **[RELLENAR CON TUS PALABRAS: Explica brevemente, con tus propias palabras, los pasos que seguiste para dejar el entorno operativo: instalación del servidor, creación de la base de datos `northwind` con la codificación adecuada, y ejecución del script `northwind.sql`. No es necesario copiar la Parte 1 completa, basta con un resumen de los pasos clave y los comandos que usaste]**
-
-```
- [RELLENAR: comandos o pasos concretos que ejecutaste, p. ej. creación de la base de datos y carga del script]
-```
-
----
+| Herramienta       | Versión                                                  |
+| ----------------- | -------------------------------------------------------- |
+| PostgreSQL        | Se Utiliza una versión de **PostgreSQL 18**              |
+| pgAdmin 4         | La versión de pgAdmin empleada es la versión **22.10.1** |
+| Sistema operativo | **Windows 11**                                           |
 
 ## Diagrama entidad-relación
 
 Diagrama generado con la herramienta ERD de pgAdmin 4 sobre la base de datos `northwind`:
 
-> 🖼️ `![Insertar captura de: Diagrama entidad-relación completo de la base de datos northwind, generado con ERD For Database en pgAdmin 4](img/diagrama-er.png)`
+> ![img/pPSql_northwind-er-diagram.png](img/pPSql_northwind-er-diagram.png)
 
-> **[RELLENAR CON TUS PALABRAS: Comenta brevemente qué se observa en el diagrama — núcleo transaccional, tabla puente, autorreferencia de empleados, tablas aisladas, etc.]**
+## Comprobaciones previas de la base de datos
 
----
+> ![img/pPSql_import_Bd (1).png](<img/pPSql_import_Bd_(1).png>)
+
+> Codificación correcta
+>
+> ![img/pPSql_codificacion.png](img/pPSql_codificacion.png)
+
+> Restricciones de la BD
+>
+> ![img/pPSql_restricciones.png](img/pPSql_restricciones.png)
+
+> Tablas BD
+>
+> ![img/pPSql_tablas.png](img/pPSql_tablas.png)
+
+> Verificación de las tablas
+>
+> ![img/pPSql_verificacion_tabla.png](img/pPSql_verificacion_tabla.png)
 
 ## Índice de consultas
 
